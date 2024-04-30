@@ -11,6 +11,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
 import Header from './components/Header';
+import Footer from './components/Footer'
 
 
 
@@ -33,6 +34,7 @@ function App() {
         <Route path='/projects' element={<Projects/>}/>
      
       </Routes>
+      <Footer/>
      </Router>
     </>
   )
