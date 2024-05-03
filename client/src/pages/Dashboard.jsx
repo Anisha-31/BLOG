@@ -8,8 +8,10 @@ function Dashboard() {
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search)
     const tabFromURL = urlParams.get('tab')
-    console.log(tabFromURL);
-  }, [location.search])
+    if (tabFromURL) {
+      setTab(tabFromURL);
+    }
+  }, [location.search]);
   return (
     <div className='min-h-screen flex flex-col md:flex-row'>
       <div className=''>

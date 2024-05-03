@@ -11,6 +11,7 @@ const Header = () => {
   const path = useLocation().pathname;
   const {theme} =useSelector((state)=>state.theme)
   const {currentUser} = useSelector((state)=>state.user)
+  console.log(currentUser.profilePicture)
   return (
     <Navbar className='border-b-2'>
         <Link to="/" className='self-center whitespace-nowrap text-sm sm:text-xl font-semibold dark:text-white'> 
