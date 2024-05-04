@@ -70,6 +70,8 @@ const handleChange =(e)=>{
   setFormData({...formData,[e.target.id]:e.target.value});
 };
 const handleSubmit = async (e) => {
+  setUpdateUserSuccess(null);
+  setUpdateUserError(null);
   e.preventDefault();
   if(Object.keys(formData).length===0){
     setUpdateUserError('No changes made')
