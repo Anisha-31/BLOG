@@ -1,14 +1,15 @@
-import { Alert, Button, TextInput } from 'flowbite-react';
+import { Alert, Button, Modal, TextInput  } from 'flowbite-react';
 import React, { useEffect, useState , useRef } from 'react'
 import {useSelector,useDispatch} from 'react-redux';
 import {app} from '../firebase'
+import {Link} from 'react-router-dom'
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import {getDownloadURL, getStorage,ref,uploadBytesResumable} from 'firebase/storage'
-import { updateFailure,updateStart,updateSuccess} from '../redux/user/slice';
-
+import { updateFailure,updateStart,updateSuccess ,deleteUserStart,deleteUserSuccess , deleteUserFailure , signoutSuccess} from '../redux/user/slice';
+import { HiOutlineExclamationCircle } from 'react-icons/hi';
 export default function DashProfile() {
-  const {currentUser} =useSelector((state)=>state.user)
+  const {currentUser , error ,loading} =useSelector((state)=>state.user)
   const [imageFile , setImageFile] =useState(null);
   const [imageFileURL, setImageFileURL]=useState(null);
   const [imageFileUploadingProgress , setImageFileUploadingprogress] = useState(null)
@@ -17,6 +18,7 @@ export default function DashProfile() {
   const [formData,setFormData]=useState();
   const [updateUserSuccess,setUpdateUserSuccess] = useState(null)
   const [updateUserError , setUpdateUserError] = useState(null)
+  const [showModal, setShowModal] = useState(false);
   // console.log(imageFileError,imageFileUploadingProgress)
   const filePickerRef =useRef();
   const dispatch = useDispatch();
@@ -103,18 +105,51 @@ const handleSubmit = async (e) => {
 
   }catch(error){
     dispatch(updateFailure(error.message))
+    setUpdateUserError(error.message);
 
 
 
   }
 }
+const handleDeleteUser = async () => {
+  setShowModal(false);
+  try {
+    dispatch(deleteUserStart());
+    const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      dispatch(deleteUserFailure(data.message));
+    } else {
+      dispatch(deleteUserSuccess(data));
+    }
+  } catch (error) {
+    dispatch(deleteUserFailure(error.message));
+  }
+};
+const handleSignout = async () => {
+  try {
+    const res = await fetch('/api/user/signout', {
+      method: 'POST',
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.log(data.message);
+    } else {
+      dispatch(signoutSuccess());
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+};
   
   return (
     <div className='max-w-lg mx-auto p-3 w-full'>
       <h1 className='my-7 text-center font-semibold text-3xl'>
       DashProfile
     </h1>
-    <form className='flex flex-col gap-4'>
+    <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
       <input type='file' accept='image/+' onChange={handleImageChange} ref={filePickerRef} hidden/>
       <div className='relative w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full' onClick={()=>filePickerRef.current.click()}>
       
@@ -147,16 +182,29 @@ const handleSubmit = async (e) => {
 <TextInput type='text' id='username' placeholder='username' defaultValue={currentUser.username} onChange={handleChange}/>
 <TextInput type='email' id='email' placeholder='email' defaultValue={currentUser.email} onChange={handleChange}/>
 
-<TextInput type='password' id='password' onChange={handleChange}/>
-<Button type='submit' className='' gradientDuoTone='purpleToBlue' outline>
-  Update 
+<TextInput type='password' id='password' onChange={handleChange} placeholder='******'/>
+<Button type='submit' className='' gradientDuoTone='purpleToBlue' outline disabled ={loading || imageFileUploading }>
+  {
+    loading?'loading' :'Update'
+  }
 </Button>
+{
+  currentUser.isAdmin && (
+   <Link to={'/create-post'}>
+    <Button type='button'
+    gradientDuoTone='purpleToPink'
+    className='w-full'>
+      Create a Post
+    </Button>
+   </Link>
+  )
+}
     </form>
     <div className='text-red-500 flex justify-between m-5'>
-      <span className='cursor-pointer'> 
+      <span className='cursor-pointer' onClick={() => setShowModal(true)}> 
         Delete Account
       </span>
-      <span className='cursor-pointer'> 
+      <span className='cursor-pointer' onClick={handleSignout} > 
         Sign  Out
       </span>
     </div>
@@ -170,6 +218,33 @@ const handleSubmit = async (e) => {
         {updateUserError}
       </Alert>
     )}
+     {error && (
+        <Alert color='failure' className='mt-5'>
+          {error}
+        </Alert>
+      )}
+    <Modal show={showModal} onClose={()=>setShowModal(false)} 
+    popup
+    size='md'>
+      <Modal.Header />
+        <Modal.Body>
+          <div className='text-center'>
+            <HiOutlineExclamationCircle className='h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto' />
+            <h3 className='mb-5 text-lg text-gray-500 dark:text-gray-400'>
+              Are you sure you want to delete your account?
+            </h3>
+            <div className='flex justify-center gap-4'>
+              <Button color='failure' onClick={handleDeleteUser}>
+                Yes, I'm sure
+              </Button>
+              <Button color='gray' onClick={() => setShowModal(false)}>
+                No, cancel
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+
+    </Modal>
     
     </div>
     

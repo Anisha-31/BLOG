@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import userRoutes from './routes/user.route.js'
 import authRoutes from './routes/auth.route.js'
+import postRoutes from './routes/post.route.js';
 dotenv.config();
 
 mongoose.connect(process.env.MONGO).then(()=>{
@@ -15,6 +16,7 @@ mongoose.connect(process.env.MONGO).then(()=>{
 const app =express();
 app.use(express.json());
 app.use(cookieParser());
+app.use('/api/post',postRoutes)
 
 
 app.listen(5000,()=>{
